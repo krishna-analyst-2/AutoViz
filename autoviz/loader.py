@@ -15,17 +15,23 @@ class CSVDataLoader:
     def __init__(self, max_rows=5000):
         self.max_rows = max_rows
         self.last_error = None
+        self.waiting = False
 
     def load_data(self, filepath):
+        # waiting = the file just isn't there / has no rows yet, which is normal
+        # at startup and shouldn't be treated as an error
         self.last_error = None
+        self.waiting = False
         if not os.path.exists(filepath):
-            self.last_error = f"CSV file not found: {filepath}"
+            self.last_error = f"{filepath} not found yet"
+            self.waiting = True
             return None
         try:
             # skip lines with the wrong field count (e.g. a line still being written)
             df = pd.read_csv(filepath, on_bad_lines="skip", skipinitialspace=True)
         except pd.errors.EmptyDataError:
-            self.last_error = "CSV file is empty - waiting for data"
+            self.last_error = f"{filepath} is empty"
+            self.waiting = True
             return None
         except (OSError, pd.errors.ParserError, UnicodeDecodeError) as exc:
             self.last_error = f"Could not read CSV: {exc}"

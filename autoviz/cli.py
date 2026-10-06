@@ -63,8 +63,6 @@ def main(argv=None):
     if args.snapshot:
         import matplotlib
         matplotlib.use("Agg")
-    if not os.path.exists(args.csv):
-        log.warning("%s does not exist yet - waiting for it to appear", args.csv)
 
     controller = AutoVizController(
         csv_path=args.csv,

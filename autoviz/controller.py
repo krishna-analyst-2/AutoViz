@@ -34,8 +34,12 @@ class AutoVizController:
         df = self.loader.load_data(self.csv_path)
         if df is None:
             msg = self.loader.last_error or "Unknown error loading CSV"
-            self._report(msg)
-            self.plotter.show_message(msg)
+            if self.loader.waiting:
+                self._report(f"Waiting for data - {msg}", level=logging.INFO)
+                self.plotter.show_message(f"Waiting for data...\n\n{msg}", waiting=True)
+            else:
+                self._report(msg)
+                self.plotter.show_message(msg)
             return False
         try:
             window_df = self.processor.filter(df)
@@ -57,10 +61,10 @@ class AutoVizController:
         log.debug("Updated plot with %d rows (%d in window)", len(df), len(window_df))
         return not agg.empty
 
-    def _report(self, message):
-        # only log an error the first time it shows up, not on every tick
+    def _report(self, message, level=logging.ERROR):
+        # only log a message the first time it shows up, not on every tick
         if message != self._last_error:
-            log.error(message)
+            log.log(level, message)
         self._last_error = message
 
     def schedule_update(self):

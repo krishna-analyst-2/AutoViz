@@ -1,3 +1,6 @@
+import contextlib
+import io
+import logging
 import os
 import sys
 import tempfile
@@ -12,6 +15,17 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import autoviz  # noqa: E402
 from autoviz.cli import build_parser, main  # noqa: E402
+
+
+
+def setUpModule():
+    # keep the expected warnings/errors out of the test output
+    logging.disable(logging.CRITICAL)
+
+
+def tearDownModule():
+    logging.disable(logging.NOTSET)
+
 
 HEADER = "timestamp,campaign,impressions,clicks,conversions,spend\n"
 GOOD_ROWS = (
@@ -78,6 +92,7 @@ class TestLoader(unittest.TestCase):
     def test_missing_file(self):  # FR-5
         self.assertIsNone(self.loader.load_data("does/not/exist.csv"))
         self.assertIn("not found", self.loader.last_error)
+        self.assertTrue(self.loader.waiting)
 
     def test_empty_file(self):
         csv = TempCSV("")
@@ -90,6 +105,7 @@ class TestLoader(unittest.TestCase):
         self.addCleanup(csv.cleanup)
         self.assertIsNone(self.loader.load_data(csv.path))
         self.assertIn("missing required column", self.loader.last_error)
+        self.assertFalse(self.loader.waiting)
 
     def test_max_rows_keeps_most_recent(self):
         rows = "".join(f"2024-06-01 10:{m:02d},A,100,10,1,1\n" for m in range(50))
@@ -186,12 +202,16 @@ class TestCLI(unittest.TestCase):  # AC-3, NFR-4
 
     def test_rejects_bad_refresh(self):
         for bad in ("0", "-1", "fast"):
-            with self.assertRaises(SystemExit):
+            err = io.StringIO()
+            with self.assertRaises(SystemExit), contextlib.redirect_stderr(err):
                 build_parser().parse_args(["--csv", "x.csv", "--refresh", bad])
+            self.assertIn("--refresh", err.getvalue())
 
     def test_requires_csv(self):
-        with self.assertRaises(SystemExit):
+        err = io.StringIO()
+        with self.assertRaises(SystemExit), contextlib.redirect_stderr(err):
             build_parser().parse_args([])
+        self.assertIn("--csv", err.getvalue())
 
     def test_snapshot(self):
         csv = TempCSV(HEADER + GOOD_ROWS)

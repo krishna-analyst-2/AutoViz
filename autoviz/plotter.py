@@ -31,7 +31,7 @@ class PlotManager:
         self.fig, axes = plt.subplots(2, 2, figsize=(13, 8))
         self.axes = axes.flatten()
         self.fig.canvas.manager.set_window_title("AutoViz")
-        self.show_message("Waiting for data...")
+        self.show_message("Waiting for data...", waiting=True)
         return self.fig
 
     def _color(self, campaign):
@@ -55,10 +55,13 @@ class PlotManager:
             self._legend.remove()
             self._legend = None
 
-    def show_message(self, message):
+    def show_message(self, message, waiting=False):
         self._clear()
         self._set_footer(f"last checked {datetime.now():%H:%M:%S}")
-        self.axes[0].text(0, 0.5, message, fontsize=12, color="firebrick", wrap=True)
+        self.axes[0].text(0.5, 0.5, message, transform=self.fig.transFigure,
+                          ha="center", va="center", wrap=True,
+                          fontsize=14 if waiting else 12,
+                          color="dimgray" if waiting else "firebrick")
         self.fig.suptitle(self.title, fontsize=14, fontweight="bold")
         self.fig.canvas.draw_idle()
 
