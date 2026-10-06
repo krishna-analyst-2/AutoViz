@@ -38,6 +38,9 @@ class CSVDataLoader:
             return None
 
         df.columns = [str(c).strip().lower() for c in df.columns]
+        # the LLD calls this column campaign_id, the PRD calls it campaign
+        if "campaign" not in df.columns and "campaign_id" in df.columns:
+            df = df.rename(columns={"campaign_id": "campaign"})
         if not self.validate(df):
             return None
         return self._clean(df)

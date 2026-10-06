@@ -35,7 +35,7 @@ def build_parser():
         prog="autoviz",
         description="Real-time marketing dashboard for a CSV file.",
         epilog="CSV columns: timestamp, campaign, impressions, clicks, conversions [, spend]\n"
-               "Example: python -m autoviz --csv data/live_campaigns.csv --refresh 5",
+               "Example: python autoviz.py --csv data/live_campaigns.csv --refresh 5",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     p.add_argument("--csv", required=True, help="path to the marketing CSV file")

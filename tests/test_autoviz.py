@@ -100,6 +100,13 @@ class TestLoader(unittest.TestCase):
         self.assertIsNone(self.loader.load_data(csv.path))
         self.assertIn("empty", self.loader.last_error)
 
+    def test_accepts_campaign_id_column(self):
+        csv = TempCSV("timestamp,campaign_id,impressions,clicks,conversions,spend\n"
+                      "2024-06-01 10:00,C1,1000,50,5,20.0\n")
+        self.addCleanup(csv.cleanup)
+        df = self.loader.load_data(csv.path)
+        self.assertEqual(list(df["campaign"]), ["C1"])
+
     def test_missing_columns(self):
         csv = TempCSV("date,name,views\n2024-06-01,Launch,10\n")
         self.addCleanup(csv.cleanup)

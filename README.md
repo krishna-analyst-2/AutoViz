@@ -65,10 +65,10 @@ in some broken rows and check that the dashboard handles them.
 **3. Open the dashboard** in a second terminal:
 
 ```bash
-python -m autoviz --csv data/live_campaigns.csv --refresh 5
+python autoviz.py --csv data/live_campaigns.csv --refresh 5
 ```
 
-You can also run `pip install -e .` and then just use `autoviz --csv ...`.
+`python -m autoviz ...` works too, or run `pip install -e .` and then just use `autoviz --csv ...`.
 
 ### Options
 
@@ -141,6 +141,7 @@ They also run on GitHub Actions for Windows, macOS and Linux.
 ## Project structure
 
 ```
+autoviz.py                start the dashboard (python autoviz.py ...)
 autoviz/
     __init__.py
     __main__.py
